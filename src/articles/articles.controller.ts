@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { PublicDataPaths } from 'src/constants/public-data-paths';
+import { getFilePath, PUBLIC_PATHS } from 'src/constants/public-data-paths';
 import { imagesFileFilter, imagesFileName } from 'src/utils/images-file-filter';
 import { ArticleService } from './article.service';
 import { NewArticle } from './dto/new-article.interface';
@@ -21,12 +21,18 @@ export class ArticlesController {
 
   @Get('/articles')
   async getArticles() {
-    return await this._articleService.findAll();
+    const articles = await this._articleService.findAll();
+    articles.forEach(
+      (art) => (art.image = getFilePath(PUBLIC_PATHS.articles, art.image)),
+    );
+    return articles;
   }
 
   @Get('/articles/:id')
   public async findArticleById(@Param('id') id: string) {
-    return await this._articleService.findById(parseInt(id));
+    const article = await this._articleService.findById(parseInt(id));
+    article.image = getFilePath(PUBLIC_PATHS.articles, article.image);
+    return article;
   }
 
   @Post('/articles/create')
@@ -34,7 +40,7 @@ export class ArticlesController {
     FilesInterceptor('image', 1, {
       fileFilter: imagesFileFilter,
       storage: diskStorage({
-        destination: 'public' + PublicDataPaths.articles,
+        destination: 'public' + PUBLIC_PATHS.articles,
         filename: imagesFileName,
       }),
     }),
@@ -43,10 +49,12 @@ export class ArticlesController {
     @Body() newArticleData: NewArticle,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return await this._articleService.add({
+    await this._articleService.add({
       ...newArticleData,
-      image: PublicDataPaths.articles + files[0].filename,
+      image: files[0].filename,
     });
+
+    return 'ok';
   }
 
   @Delete('/articles/:id')
