@@ -18,6 +18,9 @@ export class Article {
   @Column()
   userId: number;
 
+  @Column()
+  image: string;
+
   @ManyToOne((type) => User, (user) => user.articles)
   user: User;
 }

@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { PublicDataPaths } from 'src/constants/public-data-paths';
+import { imagesFileFilter, imagesFileName } from 'src/utils/images-file-filter';
 import { ArticleService } from './article.service';
 import { NewArticle } from './dto/new-article.interface';
 
@@ -17,8 +30,23 @@ export class ArticlesController {
   }
 
   @Post('/articles/create')
-  public async createArticle(@Body() newArticleData: NewArticle) {
-    return await this._articleService.add(newArticleData);
+  @UseInterceptors(
+    FilesInterceptor('image', 1, {
+      fileFilter: imagesFileFilter,
+      storage: diskStorage({
+        destination: 'public' + PublicDataPaths.articles,
+        filename: imagesFileName,
+      }),
+    }),
+  )
+  public async createArticle(
+    @Body() newArticleData: NewArticle,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return await this._articleService.add({
+      ...newArticleData,
+      image: PublicDataPaths.articles + files[0].filename,
+    });
   }
 
   @Delete('/articles/:id')
