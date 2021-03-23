@@ -20,7 +20,7 @@ export class ArticleService {
 
   public async add(data: NewArticle) {
     const inserted = await this._articleRepository.insert({
-      creationDate: new Date(),
+      creationDate: new Date().toISOString(),
       ...data,
     });
     const id = inserted.identifiers[0].id;

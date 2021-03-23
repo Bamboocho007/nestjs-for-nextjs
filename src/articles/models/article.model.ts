@@ -13,7 +13,7 @@ export class Article {
   text: string;
 
   @Column()
-  creationDate: Date;
+  creationDate: string;
 
   @Column()
   userId: number;

@@ -1,5 +1,6 @@
 export enum PUBLIC_PATHS {
-  articles = '/images/articles/',
+  articles = 'public/images/articles/',
+  articlesThumbnail = 'public/images/articles/thumbnail/',
 }
 
 export const getFilePath = (directoryPath: string, fileName: string) =>

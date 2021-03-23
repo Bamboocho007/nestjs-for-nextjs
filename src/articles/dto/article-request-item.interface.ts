@@ -1,0 +1,9 @@
+export interface ArticleRequestItemInterface {
+  id: number;
+  title: string;
+  text: string;
+  creationDate: string;
+  userId: number;
+  imageUrl: string;
+  imageTrumbUrl: string;
+}
