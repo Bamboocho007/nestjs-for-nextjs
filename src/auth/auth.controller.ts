@@ -1,8 +1,9 @@
 import { Controller, Post, UseGuards, Request, Body } from '@nestjs/common';
+import { RequestWithUser } from 'src/interfaces/request-with-user.interface';
 import { NewUserForm } from 'src/users/dto/new-user';
 import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './local-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller()
 export class AuthController {
@@ -13,12 +14,12 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
-  async login(@Request() req) {
+  async login(@Request() req: RequestWithUser) {
     return this._authService.login(req.user);
   }
 
   @Post('auth/registration')
-  async registration(@Request() req: Request, @Body() body: NewUserForm) {
+  async registration(@Body() body: NewUserForm) {
     return this._userService.add(body);
   }
 }

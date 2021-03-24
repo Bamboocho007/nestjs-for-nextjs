@@ -3,6 +3,7 @@ import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserCredentials } from './dto/user-credentials.dto';
 import { User } from 'src/users/models/user.model';
+import { compare } from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +14,8 @@ export class AuthService {
 
   async validateUser(data: UserCredentials) {
     const user = await this._usersService.findByEmail(data.email);
-    if (user?.password === data.password) {
+
+    if (await compare(data.password, user.password)) {
       const { password, ...result } = user;
       return result;
     }

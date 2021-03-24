@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { NewArticle } from './dto/new-article.interface';
 import { Article } from './models/article.model';
 import { InjectRepository } from '@nestjs/typeorm';
+import { NewArticle } from './article-interfaces';
 
 @Injectable()
 export class ArticleService {

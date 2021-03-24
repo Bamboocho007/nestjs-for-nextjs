@@ -7,3 +7,9 @@ export interface ArticleRequestItemInterface {
   imageUrl: string;
   imageTrumbUrl: string;
 }
+
+export interface NewArticleInput {
+  title: string;
+  text: string;
+  image: string;
+}
