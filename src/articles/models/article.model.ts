@@ -21,6 +21,9 @@ export class Article {
   @Column()
   image: string;
 
+  @Column()
+  topicId: number;
+
   @ManyToOne((type) => User, (user) => user.articles)
   user: User;
 }

@@ -26,6 +26,7 @@ import { Article } from './models/article.model';
 import { CurrentUser } from 'src/users/current-user.decorator';
 import { User } from 'src/users/models/user.model';
 import { ArticleRequestItemInterface, NewArticleInput } from './article-dtos';
+import { unlinkSync } from 'fs';
 
 @Controller()
 export class ArticlesController {
@@ -92,8 +93,16 @@ export class ArticlesController {
     @CurrentUser() user: User,
   ) {
     const article = await this._articleService.findById(parseInt(id));
+
     if (article.userId !== user.id) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    try {
+      unlinkSync('public' + PUBLIC_PATHS.articles + article.image);
+      unlinkSync('public' + PUBLIC_PATHS.articlesThumbnail + article.image);
+    } catch (err) {
+      console.error(err);
     }
 
     return await this._articleService.remove(parseInt(id));
