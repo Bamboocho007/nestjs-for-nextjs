@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import { Article } from './models/article.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { NewArticle } from './article-interfaces';
+import { NewArticleInput } from './article-dtos';
 
 @Injectable()
 export class ArticleService {
@@ -25,6 +26,10 @@ export class ArticleService {
     });
     const id = inserted.identifiers[0].id;
     return this._articleRepository.findOne({ id });
+  }
+
+  public async update(articleId: number, data: Partial<NewArticleInput>) {
+    return await this._articleRepository.update({ id: articleId }, data);
   }
 
   public remove(id: number) {

@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -86,6 +87,52 @@ export class ArticlesController {
     return this._getFullArticle(article);
   }
 
+  @Put('/articles/update/:id')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FilesInterceptor('image', 1, {
+      fileFilter: imagesFileFilter,
+      storage: diskStorage({
+        destination: 'public' + PUBLIC_PATHS.articles,
+        filename: imagesFileName,
+      }),
+    }),
+  )
+  public async updateArticle(
+    @Body() updateArticleData: Partial<NewArticleInput>,
+    @UploadedFiles() files: Express.Multer.File[],
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+  ): Promise<ArticleRequestItemInterface> {
+    await imageMinification(
+      ['public' + PUBLIC_PATHS.articles + files[0]?.filename],
+      'public' + PUBLIC_PATHS.articlesThumbnail,
+      [0.6, 0.8],
+    );
+
+    const article = await this._articleService.findById(parseInt(id));
+
+    if (article.userId !== user.id) {
+      this._deleteImage(files[0]?.filename);
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    if (files[0]?.filename) {
+      this._deleteImage(article.image);
+    }
+
+    await this._articleService.update(article.id, {
+      ...updateArticleData,
+      image: files[0]?.filename || article.image,
+    });
+
+    return this._getFullArticle({
+      ...article,
+      ...updateArticleData,
+      image: files[0]?.filename || article.image,
+    });
+  }
+
   @Delete('/articles/:id')
   @UseGuards(JwtAuthGuard)
   public async removeArticle(
@@ -98,14 +145,18 @@ export class ArticlesController {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
 
+    this._deleteImage(article.image);
+
+    return await this._articleService.remove(parseInt(id));
+  }
+
+  private _deleteImage(path: string) {
     try {
-      unlinkSync('public' + PUBLIC_PATHS.articles + article.image);
-      unlinkSync('public' + PUBLIC_PATHS.articlesThumbnail + article.image);
+      unlinkSync('public' + PUBLIC_PATHS.articles + path);
+      unlinkSync('public' + PUBLIC_PATHS.articlesThumbnail + path);
     } catch (err) {
       console.error(err);
     }
-
-    return await this._articleService.remove(parseInt(id));
   }
 
   private _getFullArticle(article: Article): ArticleRequestItemInterface {

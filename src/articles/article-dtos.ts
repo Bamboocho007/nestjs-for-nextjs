@@ -6,10 +6,12 @@ export interface ArticleRequestItemInterface {
   userId: number;
   imageUrl: string;
   imageTrumbUrl: string;
+  topicId: number;
 }
 
 export interface NewArticleInput {
   title: string;
   text: string;
   image: string;
+  topicId: number;
 }
